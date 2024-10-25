@@ -1,0 +1,9 @@
+name: Labeler
+
+on: [pull_request]
+
+jobs:
+  labeler:
+    uses: homebridge/.github/.github/workflows/labeler.yml@latest
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}

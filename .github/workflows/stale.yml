@@ -7,6 +7,6 @@ on:
 
 jobs:
   stale:
-    uses: homebridge-plugins/.github/.github/workflows/stale.yml@latest
+    uses: homebridge/.github/.github/workflows/stale.yml@latest
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
