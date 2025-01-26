@@ -1,6 +1,6 @@
 {
   "displayName": "Homebridge Camera FFmpeg",
-  "name": "homebridge-camera-ffmpeg",
+  "name": "@homebridge-plugins/homebridge-camera-ffmpeg",
   "version": "3.1.4",
   "description": "Homebridge Plugin Providing FFmpeg-based Camera Support",
   "main": "dist/index.js",
