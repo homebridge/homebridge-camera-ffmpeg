@@ -1,27 +1,12 @@
-name: Stale
+name: Stale workflow
 
 on:
-  issues:
-   types: [reopened]
+  workflow_dispatch:
   schedule:
-   - cron: "*/60 * * * *"
+    - cron: '45 11 * * *'
 
 jobs:
   stale:
-
-    runs-on: ubuntu-latest
-    env:
-      ACTIONS_STEP_DEBUG: true
-    steps:
-    - uses: actions/stale@v4
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        stale-issue-message: 'This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.'
-        stale-issue-label: 'stale'
-        days-before-stale: 28
-        days-before-close: 7
-        days-before-pr-stale: -1
-        days-before-pr-close: -1
-        exempt-issue-labels: 'long running,help wanted,tested config'
-        exempt-all-assignees: true
-        remove-stale-when-updated: true
+    uses: homebridge/.github/.github/workflows/stale.yml@latest
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}

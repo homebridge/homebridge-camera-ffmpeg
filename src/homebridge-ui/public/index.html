@@ -1,0 +1,230 @@
+<p class="text-center">
+  <img
+    src="https://raw.githubusercontent.com/homebridge/branding/latest/logos/homebridge-color-round.svg"
+    alt="homebridge-camera-ffmpeg logo" style="width: 25%" />
+</p>
+<div id="pageIntro" style="display: none">
+  <p class="lead text-center">Thank you for installing <strong>homebridge-camera-ffmpeg</strong></p>
+  <div class="text-center">
+    <button type="button" class="btn btn-primary" id="introLink">Continue &rarr;</button>
+  </div>
+</div>
+<div id="menuWrapper" class="btn-group w-100 mb-0" role="group" aria-label="UI Menu" style="display: none">
+  <button type="button" class="btn btn-primary" id="menuSettings">Settings</button>
+  <button type="button" class="btn btn-primary" id="menuDevices">Devices</button>
+  <button type="button" class="btn btn-primary mr-0" id="menuHome">Support</button>
+</div>
+<div id="disabledBanner" class="alert alert-secondary mb-0 mt-3" role="alert" style="display: none">
+  Plugin is currently disabled
+  <button id="disabledEnable" type="button" class="btn btn-link p-0 m-0 float-right">Enable</button>
+</div>
+<div id="pageDevices" class="mt-4" style="display: none">
+  <div id="deviceInfo">
+    <form>
+      <div class="form-group">
+        <select class="form-control" id="deviceSelect"></select>
+      </div>
+    </form>
+    <table class="table w-100" id="deviceTable" style="display: none">
+      <thead>
+        <tr class="table-active">
+          <th scope="col" style="width: 40%">Device Name</th>
+          <th scope="col" style="width: 60%" id="displayName"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Serial Number</th>
+          <td id="serialNumber"></td>
+        </tr>
+        <tr>
+          <th scope="row">Model</th>
+          <td id="model"></td>
+        </tr>
+        <tr>
+          <th scope="row">Firmware Version</th>
+          <td id="firmwareRevision"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div id="pageSupport" class="mt-4" style="display: none">
+  <p class="text-center lead">Thank you for using <strong>homebridge-camera-ffmpeg</strong></p>
+  <p class="text-center">The links below will take you to our GitHub wiki</p>
+  <h5>Setup</h5>
+  <ul>
+    <li>
+      <a href="https://github.com/homebridge-plugins/homebridge-camera-ffmpeg/wiki" target="_blank">Wiki Home</a>
+    </li>
+    <li>
+      <a href="https://github.com/homebridge-plugins/homebridge-camera-ffmpeg/wiki/Configuration"
+        target="_blank">Configuration</a>
+    </li>
+    <li>
+      <a href="https://github.com/homebridge-plugins/homebridge-camera-ffmpeg/wiki/Beta-Version"
+        target="_blank">Beta
+        Version</a>
+    </li>
+    <li>
+      <a href="https://github.com/homebridge-plugins/homebridge-camera-ffmpeg/wiki/Node-Version"
+        target="_blank">Node
+        Version</a>
+    </li>
+    <li>
+      <a href="https://github.com/homebridge-plugins/homebridge-camera-ffmpeg/wiki/Uninstallation"
+        target="_blank">Uninstallation</a>
+    </li>
+  </ul>
+  <h5>Features</h5>
+  <ul>
+    <li>
+      <a href="https://github.com/homebridge-plugins/homebridge-camera-ffmpeg/wiki/Supported-Devices"
+        target="_blank">Supported Devices</a>
+    </li>
+    <li>
+      <a href="https://github.com/homebridge-plugins/homebridge-camera-ffmpeg/wiki/Fan-Modes" target="_blank">Fan
+        Modes</a>
+    </li>
+  </ul>
+  <h5>Help/About</h5>
+  <ul>
+    <li>
+      <a href="https://github.com/homebridge-plugins/homebridge-camera-ffmpeg/issues/new/choose"
+        target="_blank">Support
+        Request</a>
+    </li>
+    <li>
+      <a href="https://github.com/homebridge-plugins/homebridge-camera-ffmpeg/blob/latest/CHANGELOG.md"
+        target="_blank">Changelog</a>
+    </li>
+    <li>
+      <a href="https://github.com/Sunoo" target="_blank">About Me</a>
+    </li>
+  </ul>
+</div>
+<script>
+  (async () => {
+    try {
+      const currentConfig = await homebridge.getPluginConfig();
+      showIntro = () => {
+        const introLink = document.getElementById('introLink');
+        introLink.addEventListener('click', () => {
+          homebridge.showSpinner();
+          document.getElementById('pageIntro').style.display = 'none';
+          document.getElementById('menuWrapper').style.display = 'inline-flex';
+          showSettings();
+          homebridge.hideSpinner();
+        });
+        document.getElementById('menuWrapper').style.display = 'none';
+        document.getElementById('pageIntro').style.display = 'block';
+      };
+      showDevices = async () => {
+        homebridge.showSpinner();
+        homebridge.hideSchemaForm();
+        document.getElementById('menuHome').classList.remove('btn-elegant');
+        document.getElementById('menuHome').classList.add('btn-primary');
+        document.getElementById('menuDevices').classList.add('btn-elegant');
+        document.getElementById('menuDevices').classList.remove('btn-primary');
+        document.getElementById('menuSettings').classList.remove('btn-elegant');
+        document.getElementById('menuSettings').classList.add('btn-primary');
+        document.getElementById('pageSupport').style.display = 'none';
+        document.getElementById('pageDevices').style.display = 'block';
+        const cachedAccessories =
+          typeof homebridge.getCachedAccessories === 'function'
+            ? await homebridge.getCachedAccessories()
+            : await homebridge.request('/getCachedAccessories');
+        if (cachedAccessories.length > 0) {
+          cachedAccessories.sort((a, b) => {
+            return a.displayName.toLowerCase() > b.displayName.toLowerCase() ? 1 : b.displayName.toLowerCase() > a.displayName.toLowerCase() ? -1 : 0;
+          });
+        }
+        const deviceSelect = document.getElementById('deviceSelect');
+        deviceSelect.innerHTML = '';
+        cachedAccessories.forEach((a) => {
+          const option = document.createElement('option');
+          option.text = a.displayName;
+          option.value = a.UUID;
+          deviceSelect.add(option);
+        });
+        showDeviceInfo = async (UUID) => {
+          homebridge.showSpinner();
+          const thisAcc = cachedAccessories.find((x) => x.UUID === UUID);
+          const context = thisAcc.context;
+          document.getElementById('displayName').innerHTML = thisAcc.displayName;
+          document.getElementById('serialNumber').innerHTML = context.serialNumber;
+          document.getElementById('model').innerHTML = context.model;
+          document.getElementById('firmwareRevision').innerHTML = context.firmwareRevision || 'N/A';
+          document.getElementById('deviceTable').style.display = 'inline-table';
+          homebridge.hideSpinner();
+        };
+        deviceSelect.addEventListener('change', (event) => showDeviceInfo(event.target.value));
+        if (cachedAccessories.length > 0) {
+          showDeviceInfo(cachedAccessories[0].UUID);
+        } else {
+          const option = document.createElement('option');
+          option.text = 'No Devices';
+          deviceSelect.add(option);
+          deviceSelect.disabled = true;
+        }
+        homebridge.hideSpinner();
+      };
+      showSupport = () => {
+        homebridge.showSpinner();
+        homebridge.hideSchemaForm();
+        document.getElementById('menuHome').classList.add('btn-elegant');
+        document.getElementById('menuHome').classList.remove('btn-primary');
+        document.getElementById('menuDevices').classList.remove('btn-elegant');
+        document.getElementById('menuDevices').classList.add('btn-primary');
+        document.getElementById('menuSettings').classList.remove('btn-elegant');
+        document.getElementById('menuSettings').classList.add('btn-primary');
+        document.getElementById('pageSupport').style.display = 'block';
+        document.getElementById('pageDevices').style.display = 'none';
+        homebridge.hideSpinner();
+      };
+      showSettings = () => {
+        homebridge.showSpinner();
+        document.getElementById('menuHome').classList.remove('btn-elegant');
+        document.getElementById('menuHome').classList.add('btn-primary');
+        document.getElementById('menuDevices').classList.remove('btn-elegant');
+        document.getElementById('menuDevices').classList.add('btn-primary');
+        document.getElementById('menuSettings').classList.add('btn-elegant');
+        document.getElementById('menuSettings').classList.remove('btn-primary');
+        document.getElementById('pageSupport').style.display = 'none';
+        document.getElementById('pageDevices').style.display = 'none';
+        homebridge.showSchemaForm();
+        homebridge.hideSpinner();
+      };
+      showDisabledBanner = () => {
+        document.getElementById('disabledBanner').style.display = 'block';
+      };
+      enablePlugin = async () => {
+        homebridge.showSpinner();
+        document.getElementById('disabledBanner').style.display = 'none';
+        currentConfig[0].disablePlugin = false;
+        await homebridge.updatePluginConfig(currentConfig);
+        await homebridge.savePluginConfig();
+        homebridge.hideSpinner();
+      };
+      menuHome.addEventListener('click', () => showSupport());
+      menuDevices.addEventListener('click', () => showDevices());
+      menuSettings.addEventListener('click', () => showSettings());
+      disabledEnable.addEventListener('click', () => enablePlugin());
+      if (currentConfig.length) {
+        document.getElementById('menuWrapper').style.display = 'inline-flex';
+        showSettings();
+        if (currentConfig[0].disablePlugin) {
+          showDisabledBanner();
+        }
+      } else {
+        currentConfig.push({ name: 'PluginUpdate' });
+        await homebridge.updatePluginConfig(currentConfig);
+        showIntro();
+      }
+    } catch (err) {
+      homebridge.toast.error(err.message, 'Error');
+    } finally {
+      homebridge.hideSpinner();
+    }
+  })();
+</script>

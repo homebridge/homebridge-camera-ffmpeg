@@ -2,6 +2,8 @@
   "pluginAlias": "Camera-ffmpeg",
   "pluginType": "platform",
   "singular": true,
+  "customUi": true,
+  "customUiPath": "./dist/homebridge-ui",
   "headerDisplay": "Homebridge Plugin Providing FFmpeg-based Camera Support.",
   "footerDisplay": "You can see configurations that have been shared by other users on [the project site](https://sunoo.github.io/homebridge-camera-ffmpeg/configs/).",
   "schema": {
@@ -116,11 +118,6 @@
             "title": "Trigger Doorbell with Motion",
             "type": "boolean",
             "description": "Rings the doorbell when motion is activated. This allows for motion alerts to appear on Apple TVs."
-          },
-          "unbridge": {
-            "title": "Unbridge Camera (Recommended)",
-            "type": "boolean",
-            "description": "Bridged cameras can cause slowdowns of the entire Homebridge instance. If unbridged, the camera will need to be added to HomeKit manually."
           },
           "videoConfig": {
             "title": "Video Configuration",
@@ -247,6 +244,20 @@
                 "title": "Two-way FFmpeg Debug Logging",
                 "type": "boolean",
                 "description": "Includes debugging output from the FFmpeg process used for two-way audio in the Homebridge log."
+              },
+              "recording": {
+                "title": "Enable Homekit Secure Video Recording",
+                "type": "boolean",
+                "required": true,
+                "default": false,
+                "description": "Enables Homekit Secure Video and records video on motion and doorbell events. Requires a home hub and iCloud plan with at least 200GB of storage."
+              },
+              "prebuffer": {
+                "title": "Enables prebuffering for Homekit Secure Video recording",
+                "type": "boolean",
+                "required": true,
+                "default": false,
+                "description": "If prebuffering is enabled the video is recorded permanent to be able to capture even the seconds before motion was detected or the doorbell event."
               }
             }
           },
@@ -302,15 +313,18 @@
       "items": [
         {
           "key": "cameras",
-          "type": "array",
-          "orderable": false,
-          "buttonText": "Add Camera",
+          "notitle": false,
+          "type": "tabarray",
+          "title": "{{ value.name || 'New Camera' }}",
+          "expandable": true,
+          "expanded": false,
+          "draggable": true,
+          "orderable": true,
           "items": [
             "cameras[].name",
             "cameras[].videoConfig.source",
             "cameras[].videoConfig.stillImageSource",
             "cameras[].videoConfig.audio",
-            "cameras[].unbridge",
             {
               "key": "cameras[]",
               "type": "section",
@@ -354,7 +368,9 @@
                   "expanded": false,
                   "items": [
                     "cameras[].videoConfig.returnAudioTarget",
-                    "cameras[].videoConfig.debugReturn"
+                    "cameras[].videoConfig.debugReturn",
+                    "cameras[].videoConfig.recording",
+                    "cameras[].videoConfig.prebuffer"
                   ]
                 },
                 "cameras[].videoConfig.vcodec",

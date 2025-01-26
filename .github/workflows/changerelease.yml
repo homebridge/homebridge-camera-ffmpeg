@@ -1,0 +1,11 @@
+name: Changelog to Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  changerelease:
+      uses: homebridge/.github/.github/workflows/change-release.yml@latest
+      secrets:
+          token: ${{ secrets.GITHUB_TOKEN }}
