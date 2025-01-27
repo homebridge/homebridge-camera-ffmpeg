@@ -10,3 +10,5 @@ jobs:
     uses: homebridge/.github/.github/workflows/stale.yml@latest
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      exempt-issue-labels: 'tested config'
